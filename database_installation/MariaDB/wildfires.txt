@@ -1,0 +1,44 @@
+Alabama	0.038479645
+Alaska	1.874918909
+Arizona	2.283513452
+Arkansas	0.102809839
+California	3.62061793
+Colorado	1.046509146
+Delaware	0.033161405
+Florida	-0.247048067
+Georgia	1.132445802
+Idaho	2.205536843
+Indiana	0.003119219
+Iowa	0.003952692
+Kansas	0.108850807
+Kentucky	-0.356709968
+Louisiana	0.135651559
+Maine	-0.00371278
+Maryland	0.176913691
+Massachusetts	0.005127548
+Michigan	0.01233969
+Minnesota	-0.134539948
+Mississippi	0.074259347
+Missouri	0.073194007
+Montana	1.087429675
+Nebraska	0.00157478
+Nevada	0.814987205
+New Jersey	-0.149352622
+New Mexico	1.015927895
+New York	-0.015555225
+North Carolina	-0.05471479
+North Dakota	-0.002916646
+Ohio	0.005541658
+Oklahoma	2.572863334
+Oregan	2.834710163
+Pennsylvania	0.02610227
+South Carolina	0.037355138
+South Dakota	0.005464073
+Tennessee	-0.006537908
+Texas	1.109279957
+Utah	0.888726096
+Virginia	0.143899881
+Washington	3.010147386
+West Virginia	-1.846792408
+Wisconsin	0.010232136
+Wyoming	-0.149151508

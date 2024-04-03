@@ -1,0 +1,40 @@
+# docker-compose.yml
+version: "3.3"
+services:
+  app:
+    build: ./weatherStationApp
+    hostname: app
+    container_name: weather_station_app
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    ports:
+      - 3006:3006
+    environment:
+      WAIT_HOSTS: mysql:3306
+    volumes:
+      - .:/weatherStationApp/app
+    links:
+      - mysql
+  mysql:
+    hostname: mysql
+    image: aidanmckendry/mysql_database:1.2
+    environment:
+      MYSQL_DATABASE: 'mydb'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'mydb'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: '#1A2b%3C4d5E!'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: '1q2w3e4r'
+    # not found in dockerhub...
+    # dockerhub image = aidanmckendry/mysql_database
+    container_name: mysql
+    ports:
+      - 3306:3306
+    volumes:
+      - data:/data/db
+
+volumes:
+  data:

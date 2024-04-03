@@ -1,0 +1,40 @@
+# docker-compose.yml
+version: "3.3"
+services:
+  app:
+    build: ./wildfireApp
+    hostname: app
+    container_name: wildfire_app
+    depends_on:
+      - mariadb
+    links:
+      - mariadb
+    ports:
+      - 3007:3007
+    environment:
+      WAIT_HOSTS: mysql:3307
+    volumes:
+      - .:/wildfireApp/app
+    links:
+      - mariadb
+  mariadb:
+    hostname: mariadb
+    image: aidanmckendry/mariadb:1.0
+    environment:
+      MYSQL_DATABASE: 'mydb'
+      # So you don't have to use root, but you can if you like
+      MYSQL_USER: 'mydb'
+      # You can use whatever password you like
+      MYSQL_PASSWORD: '#1A2b%3C4d5E!'
+      # Password for root access
+      MYSQL_ROOT_PASSWORD: '1q2w3e4r'
+    # not found in dockerhub...
+    # dockerhub image = aidanmckendry/mysql_database
+    container_name: mariadb
+    ports:
+      - 3307:3306
+    volumes:
+      - data:/data/db
+
+volumes:
+  data:

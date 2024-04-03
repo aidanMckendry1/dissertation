@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta
+       charset="utf-8"
+       name="viewport"
+       content="width=device-width,
+       initial-scale=1,
+       shrink-to-fit=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #map { height: 80% }
+      .collapsible {
+        background-color: #777;
+        color: white;
+        cursor: pointer;
+        padding: 18px;
+        width: 100%;
+        border: none;
+        text-align: left;
+        outline: none;
+        font-size: 15px;
+      }
+
+      .active, .collapsible:hover {
+        background-color: #555;
+      }
+
+      .content {
+        padding: 0 18px;
+        display: none;
+        overflow: hidden;
+        background-color: #f1f1f1;
+      }
+    </style>
+    <title>Base Map</title>
+
+  </head>
+  <div class="w3-sidebar w3-bar-block w3-collapse w3-card" style="width:100%;" id="mySidebar">
+    <button class="w3-bar-item w3-button w3-hide-large"
+      onclick="w3_close()">Close &times;
+    </button>
+    <h3 class="card-subheading">Layers:</h3>
+    <button type="button" class="collapsible">Layer 1</button>
+    <div class="content">
+      <input type="checkbox" onclick="displayTmpChangeLayer()" id="layer1" name="layer1" value="Bike">
+      <label for="layer1"> Temperature change layer (1900 - selected)</label><br>
+      <label for="language">Select a decade for temperature change:</label>
+      <form>
+        <select name="End Decade" id="decade_of_tmp_change" onchange = "updateDecadeTmpChangeLayer()">
+          <option value="1910">1910</option>
+          <option value="1920">1920</option>
+          <option value="1930">1930</option>
+          <option value="1940">1940</option>
+          <option value="1950">1950</option>
+          <option value="1960">1960</option>
+          <option value="1970">1970</option>
+          <option value="1980">1980</option>
+          <option value="1990">1990</option>
+          <option value="2000">2000</option>
+          <option value="2010" selected>2010</option>
+        </select>
+      </form>
+      <label for="language">Select a month for temperature change:</label>
+      <form>
+        <select name="Month for average" id="month_of_tmp_change" onchange = "updateDecadeTmpChangeLayer()">
+          <option value="Jan">Jan</option>
+          <option value="Feb">Feb</option>
+          <option value="Mar">Mar</option>
+          <option value="Apr">Apr</option>
+          <option value="May">May</option>
+          <option value="Jun">Jun</option>
+          <option value="Jul">Jul</option>
+          <option value="Aug" selected>Aug</option>
+          <option value="Sep">Sep</option>
+          <option value="Oct">Oct</option>
+          <option value="Nov">Nov</option>
+          <option value="Dec">Dec</option>
+        </select>
+      </form>
+      <img src="TmpChangeKey.jpg" alt="Layer key:"
+      width="200"
+      height="70"/>
+    </div>
+    <button type="button" class="collapsible">Layer 2</button>
+    <div class="content">
+      <input type="checkbox" onclick="displayWeatherStationLayer()" id="layer2" name="layer2">
+      <label for="layer2"> Weather station locations layer </label><br>
+    </div>
+    <button type="button" class="collapsible">Layer 3</button>
+    <div class="content">
+      <input type="checkbox" onclick="displayWildfireLayer()" id="layer3" name="layer3">
+      <label for="layer3"> Change in wildfire burned acreage layer (1984-2001 and 2002-2020)</label><br>
+      <img src="WildfireKey.png"
+        width="200"
+        height="80"/>
+    </div>
+  </div>
+
+  <div class="w3-main" style="width:100%;">
+
+    <div class="w3-teal">
+      <button class="w3-button w3-teal w3-xlarge" onclick="w3_open()">&#9776;</button>
+    </div>
+  </div>
+  <script type="text/javascript"
+    async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAZ5nlcAPtz1Jftib7lnAQVRd1CZYR3riE&v=beta&&callback=initMap">
+  </script>
+  <script type="text/javascript">
+
+    // Booleans for layer display
+   let showTmpChangeLayer = false;
+   let showWeatherStationLayer = false;
+   let showWildfireSeverityLayer = false;
+   let monthOfTmpChange = "Aug";
+   let decadeOfTemperatureChange = 2010;
+
+  // Key value pair array for storing tmp change values against place IDs
+    let states = {
+      // West
+      "ChIJ-bDD5__lhVQRuvNfbGh4QpQ": 0, // Washington
+      "ChIJ6Znkhaj_WFMRWIf3FQUwa9A": 0, // Idaho
+      "ChIJVWqfm3xuk1QRdrgLettlTH0": 0, // oregan
+      "ChIJPV4oX_65j4ARVW8IJ6IJUYs": 0, // California
+      "ChIJcbTe-KEKmYARs5X8qooDR88": 0, // Nevada
+      "ChIJ04p7LZwrQVMRGGwqz1jWcfU": 0, // Montana
+      "ChIJaS7hSDTiXocRLzh90nkisCY": 0, // Wyoming
+      "ChIJG8CuwJzfAFQRNduKqSde27w": 0, // Alaska
+      "ChIJzfkTj8drTIcRP0bXbKVK370": 0, // Utah
+      "ChIJt1YYm3QUQIcR_6eQSTGDVMc": 0, // Colorado
+      // South West
+      "ChIJaxhMy-sIK4cRcc3Bf7EnOUI": 0, // Arizona
+      "ChIJqVKY50NQGIcRup41Yxpuv0Y": 0, // New Mexico
+      "ChIJSTKCCzZwQIYRPN4IGI8c6xY": 0, // Texas
+      "ChIJnU-ssRE5rIcRSOoKQDPPHF0": 0, // Oklahoma
+      // Mid West
+      "ChIJY-nYVxKD11IRyc9egzmahA0": 0, // North Dakota
+      "ChIJpTjphS1DfYcRt6SGMSnW8Ac": 0, // South Dakota
+      "ChIJ7fwMtciNk4cRxArzDwyQJ6E": 0, // Nebraska
+      "ChIJawF8cXEXo4cRXwk-S6m0wmg": 0, // Kansas
+      "ChIJmwt4YJpbWE0RD6L-EJvJogI": 0, // Minnesota
+      "ChIJGWD48W9e7ocR2VnHV0pj78Y": 0, // Iowa
+      "ChIJfeMiSNXmwIcRcr1mBFnEW7U": 0, // Missouri
+      "ChIJr-OEkw_0qFIR1kmG-LjV1fI": 0, // Wisconsin
+      "ChIJGSZubzgtC4gRVlkRZFCCFX8": 0, // Illinois
+      "ChIJEQTKxz2qTE0Rs8liellI3Zc": 0, // Michigan
+      "ChIJHRv42bxQa4gRcuwyy84vEH4": 0, // Indiana
+      "ChIJwY5NtXrpNogRFtmfnDlkzeU": 0, // Ohio
+      // South East
+      "ChIJYSc_dD-e0ocR0NLf_z5pBaQ": 0, // Arkansas
+      "ChIJZYIRslSkIIYRA0flgTL3Vck": 0, // Louisiana
+      "ChIJGdRK5OQyKIYR2qbc6X8XDWI": 0, // Mississippi
+      "ChIJyVMZi0xzQogR_N_MxU5vH3c": 0, // Kentucky
+      "ChIJA8-XniNLYYgRVpGBpcEgPgM": 0, // Tennessee
+      "ChIJdf5LHzR_hogR6czIUzU0VV4": 0, // Alabama
+      "ChIJRQnL1KVUSogRQzrN3mjHALs": 0, // West Virginia
+      "ChIJ35Dx6etNtokRsfZVdmU3r_I": 0, // Maryland
+      "ChIJzbK8vXDWTIgRlaZGt0lBTsA": 0, // Virginia
+      "ChIJgRo4_MQfVIgRGa4i6fUwP60": 0, // North Carolina
+      "ChIJ49ExeWml-IgRnhcF9TKh_7k": 0, // South Carolina
+      "ChIJV4FfHcU28YgR5xBP7BC8hGY": 0, // Georgia
+      "ChIJvypWkWV2wYgR0E7HW9MTLvc": 0, // Florida
+      // North East
+      "ChIJieUyHiaALYgRPbQiUEchRsI": 0, // Pennsylvania
+      "ChIJqaUj8fBLzEwRZ5UY3sHGz90": 0, // New York
+      "ChIJ_87aSGzctEwRtGtUNnSJTSY": 0, // Vermont
+      "ChIJ1YpTHd4dsEwR0KggZ2_MedY": 0, // Maine
+      "ChIJ66bAnUtEs0wR64CmJa8CyNc": 0, // New Hampshire
+      "ChIJ_b9z6W1l44kRHA2DVTbQxkU": 0, // Massachusetts
+      "ChIJn0AAnpX7wIkRjW0_-Ad70iw": 0 // New Jersey
+    };
+
+    // Key value pair array for storing place IDs against state names
+    const placeIdForStates = {
+      // West
+      'Washington': "ChIJ-bDD5__lhVQRuvNfbGh4QpQ",
+      'Idaho': "ChIJ6Znkhaj_WFMRWIf3FQUwa9A",
+      'Oregan': "ChIJVWqfm3xuk1QRdrgLettlTH0",
+      'California': "ChIJPV4oX_65j4ARVW8IJ6IJUYs",
+      'Nevada': "ChIJcbTe-KEKmYARs5X8qooDR88",
+      'Montana': "ChIJ04p7LZwrQVMRGGwqz1jWcfU",
+      'Wyoming': "ChIJaS7hSDTiXocRLzh90nkisCY",
+      'Alaska': "ChIJG8CuwJzfAFQRNduKqSde27w",
+      'Utah': "ChIJzfkTj8drTIcRP0bXbKVK370",
+      'Colorado': "ChIJt1YYm3QUQIcR_6eQSTGDVMc",
+      // South West
+      'Arizona': "ChIJaxhMy-sIK4cRcc3Bf7EnOUI",
+      'New Mexico': "ChIJqVKY50NQGIcRup41Yxpuv0Y",
+      'Texas': "ChIJSTKCCzZwQIYRPN4IGI8c6xY",
+      'Oklahoma': "ChIJnU-ssRE5rIcRSOoKQDPPHF0",
+      // Mid West
+      "North Dakota": "ChIJY-nYVxKD11IRyc9egzmahA0",
+      "South Dakota": "ChIJpTjphS1DfYcRt6SGMSnW8Ac",
+      "Nebraska": "ChIJ7fwMtciNk4cRxArzDwyQJ6E",
+      "Kansas": "ChIJawF8cXEXo4cRXwk-S6m0wmg",
+      "Minnesota": "ChIJmwt4YJpbWE0RD6L-EJvJogI",
+      "Iowa": "ChIJGWD48W9e7ocR2VnHV0pj78Y",
+      "Missouri": "ChIJfeMiSNXmwIcRcr1mBFnEW7U",
+      "Wisconsin": "ChIJr-OEkw_0qFIR1kmG-LjV1fI",
+      "Illinois": "ChIJGSZubzgtC4gRVlkRZFCCFX8",
+      "Michigan": "ChIJEQTKxz2qTE0Rs8liellI3Zc",
+      "Indiana": "ChIJHRv42bxQa4gRcuwyy84vEH4",
+      "Ohio": "ChIJwY5NtXrpNogRFtmfnDlkzeU",
+      // South East
+      "Arkansas": "ChIJYSc_dD-e0ocR0NLf_z5pBaQ",
+      "Louisiana": "ChIJZYIRslSkIIYRA0flgTL3Vck",
+      "Mississippi": "ChIJGdRK5OQyKIYR2qbc6X8XDWI",
+      "Kentucky": "ChIJyVMZi0xzQogR_N_MxU5vH3c",
+      "Tennessee": "ChIJA8-XniNLYYgRVpGBpcEgPgM",
+      "Alabama": "ChIJdf5LHzR_hogR6czIUzU0VV4",
+      "West Virginia": "ChIJRQnL1KVUSogRQzrN3mjHALs",
+      "Maryland": "ChIJ35Dx6etNtokRsfZVdmU3r_I",
+      "Virginia": "ChIJzbK8vXDWTIgRlaZGt0lBTsA",
+      "North Carolina": "ChIJgRo4_MQfVIgRGa4i6fUwP60",
+      "South Carolina": "ChIJ49ExeWml-IgRnhcF9TKh_7k",
+      "Georgia": "ChIJV4FfHcU28YgR5xBP7BC8hGY",
+      "Florida": "ChIJvypWkWV2wYgR0E7HW9MTLvc",
+      // North East
+      "Pennsylvania": "ChIJieUyHiaALYgRPbQiUEchRsI",
+      "New York": "ChIJqaUj8fBLzEwRZ5UY3sHGz90",
+      "Vermont": "ChIJ_87aSGzctEwRtGtUNnSJTSY",
+      "Maine": "ChIJ1YpTHd4dsEwR0KggZ2_MedY",
+      "New Hampshire": "ChIJ66bAnUtEs0wR64CmJa8CyNc",
+      "Massachusetts": "ChIJ_b9z6W1l44kRHA2DVTbQxkU",
+      "New Jersey": "ChIJn0AAnpX7wIkRjW0_-Ad70iw"
+    };
+
+    async function initMap() {
+      let featureLayer;
+      let map;
+      var start = {
+        lat: 36.7783,
+        lng: -119.4179
+      };
+      map = new google.maps.Map(
+        document.getElementById('map'), {
+          zoom: 4,
+          center: new google.maps.LatLng(start),
+          mapId: "78a963aba4a764a6"
+        });
+
+      featureLayer = map.getFeatureLayer(google.maps.FeatureType.ADMINISTRATIVE_AREA_LEVEL_1);
+
+      // Calling all tmp change services
+      if (Boolean(showTmpChangeLayer)) {
+        var tmpChangeWest = await fetch(`http://localhost:3000/api/v1/tmpChanges/?month=${monthOfTmpChange}`).then(response => response.json());
+        var tmpChangeSouthWest = await fetch(`http://localhost:3001/api/v1/tmpChanges/?month=${monthOfTmpChange}`).then(response => response.json());
+        var tmpChangeMidWest = await fetch(`http://localhost:3002/api/v1/tmpChanges/?month=${monthOfTmpChange}`).then(response => response.json());
+        var tmpChangeSouthEast = await fetch(`http://localhost:3003/api/v1/tmpChanges/?month=${monthOfTmpChange}`).then(response => response.json());
+        var tmpChangeNorthEast = await fetch(`http://localhost:3004/api/v1/tmpChanges/?month=${monthOfTmpChange}`).then(response => response.json());
+
+        // Updating the temperature change values for each state
+        updateStatesFromResponse(tmpChangeWest)
+        updateStatesFromResponse(tmpChangeSouthWest)
+        updateStatesFromResponse(tmpChangeMidWest)
+        updateStatesFromResponse(tmpChangeSouthEast)
+        updateStatesFromResponse(tmpChangeNorthEast)
+
+        console.log('states array after updating temperature change', states);
+
+        featureLayer.style = (featureStyleFunctionOptions) => {
+          const placeFeature = featureStyleFunctionOptions.feature;
+          const temperaturechange = states[placeFeature.placeId];
+
+          // fill colours are not being displayed on map correctly...
+          let fillColor = getFillColour(temperaturechange);
+          console.log('fill colour', fillColor);
+
+          return {
+            fillColor,
+            fillOpacity: 0.8,
+          };
+        };
+      }
+
+      if (Boolean(showWeatherStationLayer)) {
+        var weatherStations = [];
+        var weatherStationsJsonEncoded = await fetch('http://localhost:3006/').then(response => response.json());
+        for (let x = 0; x < weatherStationsJsonEncoded.data.length; x++) {
+          weatherStations.push(JSON.parse(weatherStationsJsonEncoded.data[x]));
+        }
+        console.log("weather stations: ", weatherStations);
+
+        updateMarkersForWeatherStations(weatherStations);
+      }
+
+      if (Boolean(showWildfireSeverityLayer)) {
+        // scale marker depending on burned acreage value
+
+        var wildfireRecords = [];
+        var wildfireRecordsJsonEncoded = await fetch('http://localhost:3007/').then(response => response.json());
+        for (let x = 0; x < wildfireRecordsJsonEncoded.data.length; x++) {
+          wildfireRecords.push(JSON.parse(wildfireRecordsJsonEncoded.data[x]));
+        }
+
+        console.log("wildfire records: ", wildfireRecords);
+
+        updateMarkersForWildfires(wildfireRecords);
+
+        }
+
+    function updateStatesFromResponse(response) {
+      const data = response.data;
+      console.log('decade of temperature change before filter: ', decadeOfTemperatureChange);
+
+      var filteredTemperatureChange = data.filter(d => d.decade == decadeOfTemperatureChange);
+      console.log('filtered json response data', filteredTemperatureChange);
+
+      console.log('states array before updating temperature change', states);
+      // update states array for displaying temperature change
+      for (let i = 0; i < filteredTemperatureChange.length; i++) {
+          let state = filteredTemperatureChange[i].state;
+          let placeId = placeIdForStates[state];
+          let tempChange = filteredTemperatureChange[i].temperaturechange;
+          states[placeId] = tempChange;
+        }
+    }
+
+    function updateMarkersForWeatherStations(response) {
+      const weatherStationIcon = {
+          url: "https://pic.onlinewebfonts.com/svg/img_239346.png", // url of free weather station icon
+          scaledSize: new google.maps.Size(30, 30), // scaled size
+          origin: new google.maps.Point(0,0), // origin
+          anchor: new google.maps.Point(0, 0) // anchor
+      };
+
+      for (weatherStation in response) {
+        console.log("latitude", response[weatherStation].latitude, " longtitude", response[weatherStation].longtitude)
+        var marker = new google.maps.Marker({
+          position: {lat: response[weatherStation].longtitude, lng: response[weatherStation].latitude},
+          map: map,
+          icon: weatherStationIcon
+        });
+      }
+    }
+
+    function makeGraduatedSymbolIcon(changeInBurnedArea) {
+      let size =  30;
+      if (changeInBurnedArea > 2) {
+        size = 55
+      }
+      if (changeInBurnedArea > 3) {
+        size = 90
+      }
+      var weatherStationIcon = {
+          url: "https://img.icons8.com/ios/2x/filled-circle.png", // url of free circle icon
+          scaledSize: new google.maps.Size(size, size), // scaled size
+          origin: new google.maps.Point(0,0), // origin
+          anchor: new google.maps.Point(0, 0) // anchor
+      };
+      return weatherStationIcon
+    }
+
+    function updateMarkersForWildfires(response) {
+      for (record in response) {
+
+        let state = response[record].state;
+        // look up place id from state name
+        let placeId = placeIdForStates[state];
+        let changeInBurnedArea = response[record].change_in_burned_area;
+
+        console.log("state: ", state, ", change_in_burned_area: ", changeInBurnedArea, ", for loop iteration: ", record)
+
+        if (response[record].change_in_burned_area > 0.5) {
+          let geocoder = new google.maps.Geocoder();
+          geocoder.geocode( { 'placeId': placeId}, function(results, status) {
+          if (status == 'OK') {
+            console.log("Creating graduated symbol for state: ", state, ", change in burned area due to wild fires: ", changeInBurnedArea)
+            var marker = new google.maps.Marker({
+                map: map,
+                position: results[0].geometry.location,
+                icon: makeGraduatedSymbolIcon(changeInBurnedArea)// response[record].change_in_burned_area
+            });
+          } else {
+            console.log('Geocode was not successful for the following reason: ', status, " err", geocode );
+            }
+          });
+        }
+      }
+    }
+
+    function getFillColour(temperaturechange){
+      // five blue colour grades (-2 - -0.5)
+      if (temperaturechange < -15.0) {
+        return fillColor = "#002568";
+      } else if (temperaturechange < -2.0) {
+        return fillColor = "#0644B3";
+      } else if (temperaturechange < -1.5) {
+        return fillColor = "#566DEE";
+      } else if (temperaturechange < -1.0) {
+        return fillColor = "#54C5EF";
+      } else if (temperaturechange < -0.5) {
+        return fillColor = "#87F7F3";
+      } else if (temperaturechange < 0) {
+        return fillColor = "#BAFEFB";
+        // four yellow colour grades (0 - 2)
+      } else if (temperaturechange < 0.5) {
+        return fillColor = "#FAFBAC";
+      } else if (temperaturechange < 1.0) {
+        return fillColor = "#FCF747";
+      } else if (temperaturechange < 1.5) {
+        return fillColor = "#FCCB14";
+      } else if (temperaturechange < 2.0) {
+        return fillColor = "#FA9E18";
+        // three orange colour grades (2 - 3.5)
+      } else if (temperaturechange < 2.5) {
+        return fillColor = "#EF710D";
+      } else if (temperaturechange < 3.0) {
+        return fillColor = "#C45A07";
+      } else if (temperaturechange < 3.5) {
+        return fillColor = "#FA7048";
+        // five red colour grades (3.5 +)
+      } else if (temperaturechange < 4) {
+        return fillColor = "#DA4723";
+      } else if (temperaturechange < 4.5) {
+        return fillColor = "#D80808";
+      } else if (temperaturechange < 5.0) {
+        return fillColor = "#AC0707";
+      } else if (temperaturechange < 5.5) {
+        return fillColor = "#930606";
+      } else if (temperaturechange < 10) {
+        return fillColor = "#630101";
+      }
+    }
+  }
+
+  //var decadeList = document.getElementById("decade_of_tmp_change");
+  //var decadeValue = decadeList.value;
+  //var decadeOfTemperatureChange = parseInt(decadeValue)
+  function updateDecadeTmpChangeLayer() {
+    var decadeList = document.getElementById("decade_of_tmp_change");
+    var decadeValue = decadeList.value;
+    decadeOfTemperatureChange = parseInt(decadeValue)
+    var monthList = document.getElementById("month_of_tmp_change");
+    var monthValue = monthList.value;
+    monthOfTmpChange = monthValue;
+    // updateStatesFromResponse()
+    initMap()
+  }
+
+  function displayTmpChangeLayer() {
+    var checkbox = document.getElementById("layer1")
+    if (checkbox.checked == true) {
+      showTmpChangeLayer = true;
+    } else {
+      showTmpChangeLayer = false;
+      // set the temperature changes back to zero
+      for (state in states) {
+        let placeId = placeIdForStates[state];
+        states[placeId] = 0;
+        }
+    }
+    initMap()
+  }
+
+  function displayWeatherStationLayer() {
+    var checkbox = document.getElementById("layer2")
+    if (checkbox.checked == true) {
+      showWeatherStationLayer = true;
+    } else {
+      showWeatherStationLayer = false;
+    }
+    initMap()
+  }
+
+  function displayWildfireLayer() {
+    var checkbox = document.getElementById("layer3")
+    if (checkbox.checked == true) {
+      showWildfireSeverityLayer = true;
+    } else {
+      showWildfireSeverityLayer = false;
+    }
+    initMap()
+  }
+
+  window.initMap = initMap;
+  </script>
+
+  <script>
+    function w3_open() {
+      document.getElementById("mySidebar").style.display = "block";
+    }
+
+    function w3_close() {
+      document.getElementById("mySidebar").style.display = "none";
+  }
+  </script>
+  <body onload="initMap()">
+    <div id="map"></div>
+  </body>
+  <script>
+  var coll = document.getElementsByClassName("collapsible");
+  var i;
+
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      var content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  }
+</script>
+</html>

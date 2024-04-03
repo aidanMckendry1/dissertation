@@ -1,0 +1,46 @@
+Alaska	64.8333	-147.6167
+Colorado	39.8667	-104.6667
+California	37.6167	-122.3833
+Nevada	39.2167	-121
+Washington	47.6062	-122.3321
+Idaho	43.615	-116.2023
+Utah	40.7608	-111.891
+Oregan	45.6721	-118.7886
+Montana	47.5053	-111.3008
+Wyoming	42.833	-108.7307
+Arizona	33.4484	-112.074
+New Mexico	35.0844	-106.6504
+Oklahoma	35.0078	-97.0929
+Texas	29.7604	-95.3698
+North Dakota	46.8055	-100.7877
+South Dakota	45.4647	-98.4865
+Nebraska	41.1403	-100.7601
+Kansas	37.6872	-97.3301
+Minnesota	46.7296	-94.6859
+Iowa	41.5868	-93.625
+Missouri	37.209	-93.2923
+Wisconsin	43.0389	-87.9065
+Illisnois	40.6936	-89.589
+Michigan	46.5136	-84.3358
+Indiana	39.7684	-86.1581
+Ohio	41.4993	-81.6944
+Arkansas	34.7445	-92.288
+Louisiana	30.4515	-91.1871
+Mississippi	32.2988	-90.1848
+Kentucky	38.2527	-85.7585
+Tennessee	36.1627	-86.7816
+Alabama	33.5186	-86.8104
+West Virginia	38.3498	-81.6326
+Maryland	39.613	-77.6994
+Virginia	37.5407	-77.436
+North Carolina	35.2271	-80.8431
+South Carolina	34.0007	-81.0348
+Georgia	33.7488	-84.3877
+Florida	25.7617	-80.1918
+Pennsylvania	39.9526	-75.1652
+New York	43.0467	-77.0953
+Vermont	43.3255	-79.799
+Maine	45.0273	-69.9279
+New Hampshire	37.978	-122.0311
+Massachusetts	42.2495	-71.0662
+New Jersey	40.2206	-74.7597

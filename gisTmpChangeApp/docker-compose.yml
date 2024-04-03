@@ -1,0 +1,129 @@
+# docker-compose.yml
+version: "3.3"
+services:
+  tmp-change-west-app:
+    build: ./tmpChangeWest
+    hostname: tmp-change-west-app
+    container_name: tmp_change_app_west
+    depends_on:
+      - mongodb-west
+    links:
+      - mongodb-west
+    ports:
+      - 3000:3000
+    environment:
+      WAIT_HOSTS: mongodb:37017
+    volumes:
+      - .:/tmpChangeWest/usr/src/app
+    links:
+      - mongodb-west
+  mongodb-west:
+    hostname: mongodb-west
+    image: aidanmckendry/mongodb_west:1.0
+    container_name: mongo_west
+    ports:
+      - 37017:27017
+    volumes:
+      - data:/data/db
+  tmp-change-south-west-app:
+    build: ./tmpChangeSouthWest
+    hostname: tmp-change-south-west-app
+    container_name: tmp_change_app_south_west
+    depends_on:
+      - mongodb-south-west
+    links:
+      - mongodb-south-west
+    ports:
+      - 3001:3001
+    environment:
+      WAIT_HOSTS: mongodb:37018
+    volumes:
+      - .:/tmpChangeSouthWest/usr/src/app
+    links:
+      - mongodb-south-west
+  mongodb-south-west:
+    hostname: mongodb-south-west
+    image: aidanmckendry/mongodb_south_west:1.0
+    container_name: mongo_south_west
+    ports:
+      - 37018:27017
+    volumes:
+      - data:/data/db
+  tmp-change-mid-west-app:
+    build: ./tmpChangeMidWest
+    hostname: tmp-change-mid-west-app
+    container_name: tmp_change_app_mid_west
+    depends_on:
+      - mongodb-mid-west
+    links:
+      - mongodb-mid-west
+    ports:
+      - 3002:3002
+    environment:
+      WAIT_HOSTS: mongodb:37019
+# may need to change this voklume because it is nested within mongoose_tutorial directory
+    volumes:
+      - .:/tmpChangeMidWest/usr/src/app
+    links:
+      - mongodb-mid-west
+  mongodb-mid-west:
+    hostname: mongodb-mid-west
+    image: aidanmckendry/mongodb_mid_west:1.2
+    container_name: mongo_mid_west
+    ports:
+      - 37019:27017
+    volumes:
+      - data:/data/db
+  tmp-change-south-east-app:
+    build: ./tmpChangeSouthEast
+    hostname: tmp-change-south-east-app
+    container_name: tmp_change_app_south_east
+    depends_on:
+      - mongodb-south-east
+    links:
+      - mongodb-south-east
+    ports:
+      - 3003:3003
+    environment:
+      WAIT_HOSTS: mongodb:37020
+# may need to change this voklume because it is nested within mongoose_tutorial directory
+    volumes:
+      - .:/tmpChangeSouthEast/usr/src/app
+    links:
+      - mongodb-south-east
+  mongodb-south-east:
+    hostname: mongodb-south-east
+    image: aidanmckendry/mongodb_south_east:1.0
+    container_name: mongo_south_east
+    ports:
+      - 37020:27017
+    volumes:
+      - data:/data/db
+  tmp-change-north-east-app:
+    build: ./tmpChangeNorthEast
+    hostname: tmp-change-north-east-app
+    container_name: tmp_change_app_north_east
+    depends_on:
+      - mongodb-north-east
+    links:
+      - mongodb-north-east
+    ports:
+      - 3004:3004
+    environment:
+      WAIT_HOSTS: mongodb:37021
+# may need to change this voklume because it is nested within mongoose_tutorial directory
+    volumes:
+      - .:/tmpChangeNorthEast/usr/src/app
+    links:
+      - mongodb-north-east
+  mongodb-north-east:
+    hostname: mongodb-north-east
+    image: aidanmckendry/mongodb_north_east:1.1
+    container_name: mongo_north_east
+    ports:
+      - 37021:27017
+    volumes:
+      - data:/data/db
+
+volumes:
+  data:
